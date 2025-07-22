@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ipconfig Command Explorer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0c0c3d 0%, #1a0033 30%, #330066 70%, #4a0080 100%);
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated background grid */
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 0, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 0, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .brain-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .title {
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff00ff, #00ffff, #ff0080);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 3s ease-in-out infinite;
+            margin-bottom: 0.5rem;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-bottom: 2rem;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .info-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(255, 0, 255, 0.8);
+            box-shadow: 0 20px 40px rgba(255, 0, 255, 0.3);
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #00ffff;
+        }
+
+        .card-description {
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .terminal-section {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #00ff00;
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 1s ease-out 0.5s both;
+        }
+
+        .terminal-header {
+            color: #00ff00;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .terminal-content {
+            color: #00ff00;
+            line-height: 1.8;
+            white-space: pre-wrap;
+        }
+
+        .highlight {
+            color: #ffff00;
+            font-weight: bold;
+        }
+
+        .interactive-demo {
+            background: linear-gradient(135deg, rgba(255, 0, 255, 0.2), rgba(0, 255, 255, 0.2));
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .demo-button {
+            background: linear-gradient(45deg, #ff00ff, #00ffff);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .demo-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(255, 0, 255, 0.4);
+        }
+
+        .output-display {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            font-family: 'Courier New', monospace;
+            color: #00ffff;
+            min-height: 200px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+	    white-space: pre-wrap;
+	    overflow-wrap: break-word;
+	    text-align: left;
+        }
+
+        .output-display.active {
+            opacity: 1;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            .title {
+                font-size: 2rem;
+            }
+        }
+
+        .glow-text {
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+    
+    <div class="container">
+        <div class="header">
+            <div class="brain-icon">🧠</div>
+            <h1 class="title">ipconfig</h1>
+            <p class="subtitle glow-text">Something to Always Remember</p>
+        </div>
+
+        <div class="content-grid">
+            <div class="info-card" onclick="showDemo('ip')">
+                <span class="card-icon">📋</span>
+                <h3 class="card-title">Displays IP Addressing Information</h3>
+                <p class="card-description">Shows your computer's network configuration including IP address, subnet mask, and default gateway.</p>
+            </div>
+
+            <div class="info-card" onclick="showDemo('status')">
+                <span class="card-icon">🔌</span>
+                <h3 class="card-title">Shows Network Adapter Status</h3>
+                <p class="card-description">Reveals the current state and configuration of all your network adapters and connections.</p>
+            </div>
+
+            <div class="info-card" onclick="showDemo('troubleshoot')">
+                <span class="card-icon">🔧</span>
+                <h3 class="card-title">Used to Troubleshoot Network Issues</h3>
+                <p class="card-description">Essential tool for diagnosing connectivity problems and verifying network settings.</p>
+            </div>
+
+            <div class="info-card" onclick="showDemo('command')">
+                <span class="card-icon">💻</span>
+                <h3 class="card-title">Commonly Used at Command Line</h3>
+                <p class="card-description">Quick and efficient way to get network information without GUI tools.</p>
+            </div>
+        </div>
+
+        <div class="terminal-section">
+            <div class="terminal-header">🖥️ Windows IP Configuration Example</div>
+            <div class="terminal-content">
+<span class="highlight">C:\Users\</span>ipconfig
+
+Windows IP Configuration
+
+Ethernet adapter Ethernet:
+   <span class="highlight">IPv4 Address</span> . . . . . . . . . . : 192.168.1.10
+   <span class="highlight">Subnet Mask</span>  . . . . . . . . . . : 255.255.255.0
+   <span class="highlight">Default Gateway</span> . . . . . . . . : 192.168.1.1
+
+<span class="highlight">C:\Users\</span>
+            </div>
+        </div>
+
+        <div class="interactive-demo">
+            <h3 class="glow-text" style="margin-bottom: 1rem;">🚀 Try Interactive Commands!</h3>
+            <p style="margin-bottom: 1rem;">Click the buttons to simulate different ipconfig commands:</p>
+            
+            <button class="demo-button" onclick="runCommand('basic')">ipconfig</button>
+            <button class="demo-button" onclick="runCommand('all')">ipconfig /all</button>
+            <button class="demo-button" onclick="runCommand('release')">ipconfig /release</button>
+            <button class="demo-button" onclick="runCommand('renew')">ipconfig /renew</button>
+            <button class="demo-button" onclick="runCommand('flushdns')">ipconfig /flushdns</button>
+            
+            <div class="output-display" id="commandOutput"></div>
+        </div>
+    </div>
+
+    <script>
+        function showDemo(type) {
+            const demos = {
+                ip: "💡 ipconfig shows your IP address (192.168.1.10), which is like your computer's home address on the network!",
+                status: "🔍 Check if your network adapter is connected and working properly with ipconfig!",
+                troubleshoot: "🛠️ Can't connect to the internet? ipconfig helps you verify your network settings first!",
+                command: "⚡ Fast and efficient - type 'ipconfig' in Command Prompt for instant network info!"
+            };
+            
+            alert(demos[type]);
+        }
+
+        function runCommand(cmd) {
+            const output = document.getElementById('commandOutput');
+            output.classList.remove('active');
+            
+            setTimeout(() => {
+                let result = '';
+                
+                switch(cmd) {
+                    case 'basic':
+                        result = `C:\\Users\\>ipconfig
+
+Windows IP Configuration
+
+Ethernet adapter Ethernet:
+   IPv4 Address. . . . . . . . . . . : 192.168.1.10
+   Subnet Mask . . . . . . . . . . . : 255.255.255.0
+   Default Gateway . . . . . . . . . : 192.168.1.1`;
+                        break;
+                        
+                    case 'all':
+                        result = `C:\\Users\\>ipconfig /all
+
+Windows IP Configuration
+
+   Host Name . . . . . . . . . . . . : MyComputer
+   Primary Dns Suffix  . . . . . . . :
+   Node Type . . . . . . . . . . . . : Hybrid
+   IP Routing Enabled. . . . . . . . : No
+   WINS Proxy Enabled. . . . . . . . : No
+
+Ethernet adapter Ethernet:
+   Connection-specific DNS Suffix  . :
+   Description . . . . . . . . . . . : Intel Ethernet Adapter
+   Physical Address. . . . . . . . . : 00-1A-2B-3C-4D-5E
+   DHCP Enabled. . . . . . . . . . . : Yes
+   IPv4 Address. . . . . . . . . . . : 192.168.1.10
+   Subnet Mask . . . . . . . . . . . : 255.255.255.0
+   Default Gateway . . . . . . . . . : 192.168.1.1
+   DNS Servers . . . . . . . . . . . : 8.8.8.8
+                                       8.8.4.4`;
+                        break;
+                        
+                    case 'release':
+                        result = `C:\\Users\\>ipconfig /release
+
+Windows IP Configuration
+
+Ethernet adapter Ethernet:
+   Connection-specific DNS Suffix  . :
+   IPv4 Address. . . . . . . . . . . : (IP address released)
+   
+✅ IP address successfully released!`;
+                        break;
+                        
+                    case 'renew':
+                        result = `C:\\Users\\>ipconfig /renew
+
+Windows IP Configuration
+
+Ethernet adapter Ethernet:
+   Connection-specific DNS Suffix  . :
+   IPv4 Address. . . . . . . . . . . : 192.168.1.15
+   Subnet Mask . . . . . . . . . . . : 255.255.255.0
+   Default Gateway . . . . . . . . . : 192.168.1.1
+   
+✅ IP address successfully renewed!`;
+                        break;
+                        
+                    case 'flushdns':
+                        result = `C:\\Users\\>ipconfig /flushdns
+
+Windows IP Configuration
+
+Successfully flushed the DNS Resolver Cache.
+
+✅ DNS cache cleared! This can help resolve website connectivity issues.`;
+                        break;
+                }
+                
+                output.textContent = result;
+                output.classList.add('active');
+            }, 300);
+        }
+
+        // Add some sparkle effect on load
+        setTimeout(() => {
+            const cards = document.querySelectorAll('.info-card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.animation = `fadeInUp 0.6s ease-out ${index * 0.1}s both`;
+                }, index * 100);
+            });
+        }, 500);
+    </script>
+</body>
+</html>
